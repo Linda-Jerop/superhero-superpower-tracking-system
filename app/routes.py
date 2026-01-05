@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app import db
 from app.models import Hero, Power, HeroPower
-from app.email import send_hero_power_email
+from app.email import send_hero_assignment_email, send_power_update_email
 from sqlalchemy.exc import IntegrityError
 
 api_bp = Blueprint('api', __name__)
@@ -56,6 +56,11 @@ def update_power(id):
     try:
         power.description = data['description'] # validation happens automatically
         db.session.commit()
+        
+        # Send notification email
+        recipient_email = data.get('notification_email', 'admin@superheroes.com')
+        send_power_update_email(power.name, recipient_email)
+        
         return jsonify(power.to_dict()), 200
     except ValueError as e:
         db.session.rollback()
@@ -88,34 +93,35 @@ def create_hero_power():
         )
         db.session.add(hero_power)
         db.session.commit()
+        
+        # Send notification email
+        recipient_email = data.get('notification_email', 'admin@superheroes.com')
+        send_hero_assignment_email(hero.name, power.name, recipient_email)
+        
         return jsonify(hero_power.to_dict()), 201 # lowkey a vibe
     except ValueError as e:
         db.session.rollback()
         return jsonify({'errors': [str(e)]}), 400
 
 
-# ============= EMAIL ROUTE =============
+# ============= EMAIL DEMO ROUTE =============
 
-@api_bp.route('/send_power_email', methods=['POST'])
-def send_power_email():
-    """Send email notification about a new power acquisition"""
+@api_bp.route('/send-test-email', methods=['POST'])
+def send_test_email():
+    """Demo route to test email sending capability"""
     data = request.get_json()
-    
-    # Validate required fields
-    if not data or not all(k in data for k in ['hero_name', 'power_name', 'recipient_email']):
-        return jsonify({'errors': ['hero_name, power_name, and recipient_email are required']}), 400
+    recipient = data.get('recipient_email', 'admin@superheroes.com')
     
     try:
-        success = send_hero_power_email(
-            data['hero_name'],
-            data['power_name'],
-            data['recipient_email']
-        )
+        from app import mail
+        from flask_mail import Message
         
-        if success:
-            return jsonify({'message': 'Email sent successfully'}), 200
-        else:
-            return jsonify({'errors': ['Failed to send email']}), 500
+        msg = Message(
+            subject='Superheroes API - Test Email',
+            recipients=[recipient],
+            body='This is a test email from the Superheroes API. Email functionality is working!'
+        )
+        mail.send(msg)
+        return jsonify({'message': 'Test email sent successfully', 'recipient': recipient}), 200
     except Exception as e:
-        return jsonify({'errors': [str(e)]}), 400
-
+        return jsonify({'error': f'Failed to send email: {str(e)}'}), 500

@@ -2,27 +2,46 @@ from flask_mail import Message
 from app import mail
 from flask import current_app
 
-def send_hero_power_email(hero_name, power_name, recipient_email):
-    """Send email notification when a hero gains a new power"""
+def send_hero_assignment_email(hero_name, power_name, recipient_email):
+    """Send email when a hero is assigned a new power"""
     try:
-        subject = f"🦸 {hero_name} has acquired a new power!"
-        body = f"""
+        msg = Message(
+            subject=f"New Power Assignment: {hero_name}",
+            recipients=[recipient_email],
+            body=f"""
 Hello,
 
-Great news! {hero_name} has just acquired a new superpower: {power_name}.
+Congratulations! {hero_name} has been assigned a new power: {power_name}.
 
-This hero is now even more powerful and ready to save the day!
+This is an exciting development in the superhero universe.
 
 Best regards,
-Superheroes API Team
-        """
-        
-        msg = Message(
-            subject=subject,
-            recipients=[recipient_email],
-            body=body
+The Superheroes API Team
+            """
         )
-        
+        mail.send(msg)
+        return True
+    except Exception as e:
+        current_app.logger.error(f"Failed to send email: {str(e)}")
+        return False
+
+def send_power_update_email(power_name, recipient_email):
+    """Send email when a power is updated"""
+    try:
+        msg = Message(
+            subject=f"Power Updated: {power_name}",
+            recipients=[recipient_email],
+            body=f"""
+Hello,
+
+The power '{power_name}' has been updated with new information.
+
+Please check the system for details.
+
+Best regards,
+The Superheroes API Team
+            """
+        )
         mail.send(msg)
         return True
     except Exception as e:
