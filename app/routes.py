@@ -4,4 +4,4 @@ from app.models import Hero, Power, HeroPower
 
 api_bp = Blueprint('api', __name__)
 
-# Routes will be added here (placeholder for now)
+# Routes here (placeholder for now)
