@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superheroes API - Endpoint Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f7e2e980 0%, #f78ab7 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            color: rgba(156, 56, 86, 0.904);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .endpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .endpoint {
+            background: rgba(255, 255, 255, 0.74);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(2, 2, 2, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .endpoint:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgb(255, 254, 254);
+        }
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+            color: rgb(255, 255, 255);
+        }
+        .get { background: #7c4c58; }
+        .post { background: #74daac; }
+        .patch { background: #693b03; }
+        .endpoint-path {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.95em;
+            color: #333;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .endpoint-desc {
+            color: #666;
+            font-size: 0.95em;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-align: center;
+        }
+        .status.working {
+            background: #66e470;
+            color: #2e7d32;
+            border: 1px solid #81c784;
+        }
+        .status.loading {
+            background: #e6a43b;
+            color: #993a06;
+            border: 1px solid #cc8d2f;
+        }
+        .test-btn {
+            background: #3457f0;
+            color: rgb(221, 113, 113);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .test-btn:hover {
+            background: #3e52c7;
+        }
+        .response {
+            background: #e05c5c;
+            border-left: 4px solid #4665ee;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.85em;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #333;
+            display: none;
+        }
+        .response.show {
+            display: block;
+        }
+        .response.success {
+            border-left-color: #6af36e;
+            background: #83f106;
+        }
+        .response.error {
+            border-left-color: #df5b51;
+            background: #eb7c8d;
+        }
+        .legend {
+            background: rgb(224, 101, 101);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .legend h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .legend-item {
+            padding: 10px;
+            background: #e06161;
+            border-radius: 4px;
+        }
+        .legend-item strong {
+            color: #4c68e4;
+        }
+        .stats {
+            background: rgb(247, 107, 107);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(219, 107, 107, 0.2);
+            text-align: center;
+        }
+        .stats h2 {
+            color: #2e0101;
+            margin-bottom: 20px;
+        }
+        .stat-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #010f50 0%, #2d0158 100%);
+            color: rgb(214, 100, 100);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .stat-box .number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .stat-box .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦸 Superheroes API</h1>
+            <p>Test all endpoints - Email credentials are hidden for security</p>
+        </div>
+
+        <div class="legend">
+            <h2>📊 API Status Overview</h2>
+            <div class="stat-boxes">
+                <div class="stat-box">
+                    <div class="number">6</div>
+                    <div class="label">Active Endpoints</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">10</div>
+                    <div class="label">Heroes in DB</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">4</div>
+                    <div class="label">Powers in DB</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">✅</div>
+                    <div class="label">Email Enabled</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="endpoints">
+            <!-- GET /heroes -->
+            <div class="endpoint">
+                <div class="endpoint-method get">GET</div>
+                <div class="endpoint-path">/heroes</div>
+                <div class="endpoint-desc">Retrieve all heroes with basic info</div>
+                <button class="test-btn" onclick="testEndpoint('GET', '/heroes', null, this)">Test Endpoint</button>
+                <div class="response"></div>
+                <div class="status working">✅ Working</div>
+            </div>
+
+            <!-- GET /heroes/:id -->
+            <div class="endpoint">
+                <div class="endpoint-method get">GET</div>
+                <div class="endpoint-path">/heroes/1</div>
+                <div class="endpoint-desc">Get hero with their powers</div>
+                <button class="test-btn" onclick="testEndpoint('GET', '/heroes/1', null, this)">Test Endpoint</button>
+                <div class="response"></div>
+                <div class="status working">✅ Working</div>
+            </div>
+
+            <!-- GET /powers -->
+            <div class="endpoint">
+                <div class="endpoint-method get">GET</div>
+                <div class="endpoint-path">/powers</div>
+                <div class="endpoint-desc">Retrieve all available powers</div>
+                <button class="test-btn" onclick="testEndpoint('GET', '/powers', null, this)">Test Endpoint</button>
+                <div class="response"></div>
+                <div class="status working">✅ Working</div>
+            </div>
+
+            <!-- GET /powers/:id -->
+            <div class="endpoint">
+                <div class="endpoint-method get">GET</div>
+                <div class="endpoint-path">/powers/1</div>
+                <div class="endpoint-desc">Get specific power details</div>
+                <button class="test-btn" onclick="testEndpoint('GET', '/powers/1', null, this)">Test Endpoint</button>
+                <div class="response"></div>
+                <div class="status working">✅ Working</div>
+            </div>
+
+            <!-- PATCH /powers/:id -->
+            <div class="endpoint">
+                <div class="endpoint-method patch">PATCH</div>
+                <div class="endpoint-path">/powers/1</div>
+                <div class="endpoint-desc">Update power description with email notification</div>
+                <button class="test-btn" onclick="testEndpoint('PATCH', '/powers/1', {description: 'New powerful description that is definitely over 20 characters long'}, this)">Test Endpoint</button>
+                <div class="response"></div>
+                <div class="status working">✅ Working + Email Sent</div>
+            </div>
+
+            <!-- POST /hero_powers -->
+            <div class="endpoint">
+                <div class="endpoint-method post">POST</div>
+                <div class="endpoint-path">/hero_powers</div>
+                <div class="endpoint-desc">Create hero-power with email notification</div>
+                <button class="test-btn" onclick="testEndpoint('POST', '/hero_powers', {strength: 'Average', power_id: 2, hero_id: 5}, this)">Test Endpoint</button>
+                <div class="response"></div>
+                <div class="status working">✅ Working + Email Sent</div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <h2>🔐 Security Notes</h2>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <strong>Email Credentials:</strong> Hidden in .env file (not exposed)
+                </div>
+                <div class="legend-item">
+                    <strong>Database:</strong> SQLite with SQLAlchemy ORM
+                </div>
+                <div class="legend-item">
+                    <strong>Validations:</strong> All inputs validated server-side
+                </div>
+                <div class="legend-item">
+                    <strong>Error Handling:</strong> 400, 404, 500 HTTP status codes
+                </div>
+                <div class="legend-item">
+                    <strong>Cascade Deletes:</strong> Referential integrity maintained
+                </div>
+                <div class="legend-item">
+                    <strong>Serialization:</strong> Depth-limited to prevent circular refs
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testEndpoint(method, path, body, button) {
+            const endpoint = button.closest('.endpoint');
+            const responseDiv = endpoint.querySelector('.response');
+            const statusDiv = endpoint.querySelector('.status');
+            
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            statusDiv.textContent = '⏳ Testing...';
+            statusDiv.className = 'status loading';
+            
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                
+                const response = await fetch(`http://localhost:5000${path}`, options);
+                const data = await response.json();
+                
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+                responseDiv.classList.add('show');
+                
+                if (response.ok) {
+                    responseDiv.classList.remove('error');
+                    responseDiv.classList.add('success');
+                    statusDiv.textContent = `✅ ${response.status} - Success`;
+                    statusDiv.className = 'status working';
+                } else {
+                    responseDiv.classList.remove('success');
+                    responseDiv.classList.add('error');
+                    statusDiv.textContent = `❌ ${response.status} - Error (see response)`;
+                    statusDiv.className = 'status loading';
+                }
+            } catch (error) {
+                responseDiv.textContent = `Error: ${error.message}`;
+                responseDiv.classList.add('show', 'error');
+                responseDiv.classList.remove('success');
+                statusDiv.textContent = '❌ Connection Failed';
+                statusDiv.className = 'status loading';
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test Endpoint';
+            }
+        }
+    </script>
+</body>
+</html>

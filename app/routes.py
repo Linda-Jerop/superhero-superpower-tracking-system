@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
 from app import db
 from app.models import Hero, Power, HeroPower
 from app.email import send_hero_assignment_email, send_power_update_email
 from sqlalchemy.exc import IntegrityError
+import os
 
 api_bp = Blueprint('api', __name__)
 
@@ -125,3 +126,12 @@ def send_test_email():
         return jsonify({'message': 'Test email sent successfully', 'recipient': recipient}), 200
     except Exception as e:
         return jsonify({'error': f'Failed to send email: {str(e)}'}), 500
+
+
+# ============= TEST UI ROUTE =============
+
+@api_bp.route('/test-ui')
+def test_ui():
+    """Serve the interactive test UI for all endpoints"""
+    ui_path = os.path.join(os.path.dirname(__file__), '..', 'test_ui.html')
+    return send_file(ui_path, mimetype='text/html')
